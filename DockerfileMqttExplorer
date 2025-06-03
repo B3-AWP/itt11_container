@@ -1,0 +1,33 @@
+FROM ubuntu:20.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    xvfb \
+    libgtk-3-0 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxi6 \
+    libxtst6 \
+    libnss3 \
+    libxrandr2 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libxss1 \
+    libxshmfence1 \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Fetch the latest release version of MQTT Explorer
+RUN LATEST_URL=$(wget -qO- https://api.github.com/repos/thomasnordquist/MQTT-Explorer/releases/latest | jq -r '.assets[] | select(.name | endswith(".AppImage")) | .browser_download_url') && \
+    wget $LATEST_URL -O /usr/local/bin/mqtt-explorer && \
+    chmod +x /usr/local/bin/mqtt-explorer
+
+# Entry point
+CMD ["xvfb-run", "/usr/local/bin/mqtt-explorer"]

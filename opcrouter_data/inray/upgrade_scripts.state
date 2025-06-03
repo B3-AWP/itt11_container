@@ -1,0 +1,4 @@
+/etc/s6-overlay/s6-rc.d/container-upgrades/scripts/0_5.0.0-upgrade-migrate-to-data-inray.bash
+/etc/s6-overlay/s6-rc.d/container-upgrades/scripts/1_5.1.0-set-folder-permissions.bash
+/etc/s6-overlay/s6-rc.d/container-upgrades/scripts/2_5.2.10-set-key-storage-permissions.bash
+/etc/s6-overlay/s6-rc.d/container-upgrades/scripts/4_5.4.0-set-config-folder-permissions.bash

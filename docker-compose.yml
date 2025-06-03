@@ -1,0 +1,95 @@
+services:
+  maria:
+    build:
+      context: .
+      dockerfile: DockerfileMariaDB
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "${PORT_MARIADB}:3306"
+    volumes:
+      - ./db_data:/var/lib/mysql
+      - ./sql_dumps:/var/lib/mysql-dumps
+      - ./mysqld:/run/mysqld
+
+  phpmyadmin:
+    depends_on:
+      - maria
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "${PORT_PHPMYADMIN}:80"
+    environment:
+      PMA_HOST: maria
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+
+  opc-router:
+    image: opcrouter/runtime:latest
+    container_name: opc-router
+    user: ${OPCROUTER_USER}
+    environment:
+      - OR_DISABLE_AUTH=true
+      - OR_I_ACCEPT_EULA=true
+    volumes:
+      - ./opcrouter_data:/data
+    ports:
+      - "${PORT_OPCROUTER}:8080"
+
+  opc-ua-browser:
+    image: iotechsys/opc-ua-browser
+    restart: always
+    ports:
+      - "${PORT_OPCBROWSER}:4000"
+
+  mongodb:
+    image: mongo
+    restart: always
+    ports:
+      - "${PORT_MONGODB}:27017"
+    volumes:
+      - ./mongo_data:/data/db
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+
+  mongo-express:
+    image: mongo-express
+    depends_on:
+      - mongodb
+    ports:
+      - "${PORT_MONGOEXPRESS}:8081"
+    environment:
+      # ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      # ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGODB_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      ME_CONFIG_BASICAUTH_ENABLED: "false"
+      # ME_CONFIG_MONGODB_URL: "mongodb://root:${MONGODB_ROOT_PASSWORD}@mongodb:27017/"
+      ME_CONFIG_MONGODB_URL: "mongodb://mongodb:27017/"
+
+  nodered:
+    image: nodered/node-red
+    restart: always
+    ports:
+      - "${PORT_NODERED}:1880"
+    volumes:
+      - ./nodered_data:/data
+
+  mosquitto:
+    image: eclipse-mosquitto
+    restart: always
+    ports:
+      - "${PORT_MQTT}:1883"
+    volumes:
+      - ./mosquitto_data:/mosquitto/data
+      - ./mosquitto_log:/mosquitto/log
+
+volumes:
+  db_data:
+  mongo_data:
+  nodered_data:
+  mosquitto_data:
+  mosquitto_log:
